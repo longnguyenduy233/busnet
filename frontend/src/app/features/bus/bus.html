@@ -1,0 +1,99 @@
+<div class="page-container">
+  @if (error$ | async; as error) {
+    <div class="error-banner" role="alert">
+      <mat-icon>error_outline</mat-icon> {{ error }}
+    </div>
+  }
+  <div class="page-header">
+    <h1>Bus Management</h1>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon> New Bus
+    </button>
+  </div>
+
+  @if (loading$ | async) {
+    <div class="spinner-container">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else {
+    <table
+      mat-table
+      [dataSource]="(buses$ | async) ?? []"
+      matSort
+      [matSortActive]="(sortBy$ | async) ?? 'name'"
+      [matSortDirection]="(sortDir$ | async) ?? 'asc'"
+      (matSortChange)="onSortChange($event)"
+      class="mat-elevation-z2 full-width">
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+        <td mat-cell *matCellDef="let bus">{{ bus.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="licensePlate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>License Plate</th>
+        <td mat-cell *matCellDef="let bus">{{ bus.licensePlate }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="capacity">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Capacity</th>
+        <td mat-cell *matCellDef="let bus">{{ bus.capacity }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+        <td mat-cell *matCellDef="let bus">
+          <span [class]="'status-badge status-' + bus.status.toLowerCase()">
+            {{ bus.status }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="route">
+        <th mat-header-cell *matHeaderCellDef>Route</th>
+        <td mat-cell *matCellDef="let bus">
+          @if (bus.routeName) {
+            <span class="route-chip">{{ bus.routeName }}</span>
+          } @else {
+            <span class="no-route">—</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let bus" class="actions-cell">
+          <button mat-icon-button matTooltip="Assign Route"
+                  (click)="openAssignRoute(bus)">
+            <mat-icon>route</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Edit" (click)="openEdit(bus)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Delete" color="warn" (click)="confirmDelete(bus)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+          No buses found. Click "New Bus" to add one.
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator
+      [length]="total$ | async"
+      [pageIndex]="((page$ | async) ?? 1) - 1"
+      [pageSize]="(pageSize$ | async) ?? 10"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      showFirstLastButtons
+      (page)="onPageChange($event)"
+      aria-label="Select page of buses">
+    </mat-paginator>
+  }
+</div>

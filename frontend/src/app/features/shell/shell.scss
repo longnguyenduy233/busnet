@@ -1,0 +1,95 @@
+$nav-active-link-color: #343dff;
+
+// Document-level scroll was showing on Tracking: toolbar + `calc(100vh - 64px)` exceeded the
+// real viewport (toolbar height ≠ 64px, sub-pixel rounding). Fill below toolbar with flex instead.
+:host {
+  display: block;
+  box-sizing: border-box;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.shell-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.shell-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  // Full-bleed map: main must not introduce its own scrollbars (Sidebar uses overflow:auto).
+  &.shell-main--tracking {
+    overflow: hidden;
+  }
+
+  // Routed view is injected next to `<router-outlet />`; stretch it below the toolbar.
+  > :not(router-outlet) {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+  }
+}
+
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+
+  .nav-left .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  .nav-center {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+
+    button {
+      font-size: 1rem;
+    }
+
+    // RouterLinkActive: bespoke accent (not tied to --mat-sys-primary).
+    button.mat-mdc-button.active-link {
+      background-color: transparent;
+      font-weight: 600;
+      color: $nav-active-link-color;
+      --mat-button-text-label-text-color: #{$nav-active-link-color};
+      --mat-button-text-state-layer-color: #{$nav-active-link-color};
+    }
+
+    button.mat-mdc-button.active-link:hover {
+      background-color: transparent;
+    }
+
+    button.mat-mdc-button.active-link:focus-visible {
+      outline: 2px solid $nav-active-link-color;
+      outline-offset: 3px;
+    }
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    .user-name {
+      font-size: 1rem;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+
+  }
+}

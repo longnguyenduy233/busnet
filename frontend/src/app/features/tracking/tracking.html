@@ -1,0 +1,150 @@
+<div class="tracking-layout">
+  <aside class="tracking-sidebar mat-elevation-z2">
+    @if (sidebarVm$ | async; as vm) {
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Buses</h2>
+      </div>
+      <div class="sidebar-table-wrap">
+        <table
+          mat-table
+          [dataSource]="vm.sidebarBuses"
+          matSort
+          [matSortActive]="vm.sortBy"
+          [matSortDirection]="vm.sortDir"
+          (matSortChange)="onSidebarSortChange($event)"
+          class="bus-table">
+          <ng-container matColumnDef="map">
+            <th mat-header-cell *matHeaderCellDef class="col-map">
+              <mat-checkbox
+                [checked]="vm.headerMapCheckboxState === true"
+                [indeterminate]="vm.headerMapCheckboxState === null"
+                (change)="onHeaderMapVisibilityChange($event.checked, vm.sidebarBuses)"
+                aria-label="Toggle map visibility for buses on this page">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let bus" class="col-map">
+              <mat-checkbox
+                [checked]="vm.mapBusIds.has(bus.id)"
+                (change)="onMapVisibilityChange(bus.id, $event.checked)"
+                [aria-label]="'Show ' + bus.name + ' on map'">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+            <td mat-cell *matCellDef="let bus">{{ bus.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="route">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Route</th>
+            <td
+              mat-cell
+              *matCellDef="let bus"
+              class="col-route"
+              [matTooltip]="bus.routeName || ''"
+              [matTooltipDisabled]="!bus.routeName">{{ bus.routeName || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+            <td mat-cell *matCellDef="let bus">
+              <span class="status-pill" [class.inactive]="bus.status === 'Inactive'">
+                {{ bus.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="focus">
+            <th mat-header-cell *matHeaderCellDef class="col-focus"></th>
+            <td mat-cell *matCellDef="let bus" class="col-focus">
+              <button
+                type="button"
+                mat-icon-button
+                matTooltip="Centre map on this bus"
+                (click)="centerMapOnBus(bus, vm.mapBuses, vm.entities)"
+                aria-label="Centre map on bus">
+                <mat-icon>my_location</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedSidebarColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedSidebarColumns;" class="data-row"></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell empty-cell" [attr.colspan]="displayedSidebarColumns.length">
+              No buses loaded. Check the Bus page or API.
+            </td>
+          </tr>
+        </table>
+      </div>
+      <mat-paginator
+        class="sidebar-paginator"
+        [length]="vm.total"
+        [pageIndex]="vm.page - 1"
+        [pageSize]="vm.pageSize"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        showFirstLastButtons
+        (page)="onSidebarPageChange($event)"
+        aria-label="Select page of buses for tracking">
+      </mat-paginator>
+    }
+  </aside>
+
+  <div class="tracking-main">
+    <div class="tracking-container">
+      @if (signalRStatus$ | async; as status) {
+        @if (status === 'reconnecting') {
+          <div class="status-banner status-reconnecting" role="alert">
+            <mat-icon>wifi_off</mat-icon> Reconnecting to server…
+          </div>
+        } @else if (status === 'disconnected') {
+          <div class="status-banner status-disconnected" role="alert">
+            <mat-icon>error_outline</mat-icon> Disconnected. Attempting to reconnect…
+          </div>
+        }
+      }
+      @if (loading$ | async) {
+        <div class="spinner-overlay">
+          <mat-spinner diameter="48"></mat-spinner>
+        </div>
+      }
+
+      @let plannedShown = (mapShowPlannedRoute$ | async) ?? true;
+      @let liveGpsShown = (mapShowLiveGpsLayers$ | async) ?? true;
+
+      <!-- Icon toggles: combineLatest reacts to BehaviourSubjects — independent of sidebar map checkboxes -->
+      <div class="map-layer-toolbar mat-elevation-z2" role="toolbar" aria-label="Map layers">
+        <button
+          mat-icon-button
+          type="button"
+          [color]="plannedShown ? 'primary' : undefined"
+          class="map-layer-toggle"
+          [class.map-layer-toggle--off]="!plannedShown"
+          [matTooltip]="plannedShown ? 'Hide planned routes' : 'Show planned routes'"
+          matTooltipShowDelay="200"
+          (click)="toggleMapShowPlannedRoute()"
+          [attr.aria-pressed]="plannedShown"
+          aria-label="Toggle dashed planned routes on the map">
+          <mat-icon>alt_route</mat-icon>
+        </button>
+
+        <button
+          mat-icon-button
+          type="button"
+          [color]="liveGpsShown ? 'primary' : undefined"
+          class="map-layer-toggle"
+          [class.map-layer-toggle--off]="!liveGpsShown"
+          [matTooltip]="liveGpsShown ? 'Hide live buses & GPS trails' : 'Show live buses & GPS trails'"
+          matTooltipShowDelay="200"
+          (click)="toggleMapShowLiveGpsLayers()"
+          [attr.aria-pressed]="liveGpsShown"
+          aria-label="Toggle live bus markers and GPS history trails on the map">
+          <mat-icon>near_me</mat-icon>
+        </button>
+      </div>
+
+      <div id="tracking-map" class="map"></div>
+    </div>
+  </div>
+</div>

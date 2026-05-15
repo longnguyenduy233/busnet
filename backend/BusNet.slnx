@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BusNet.Api/BusNet.Api.csproj" />
+    <Project Path="src/BusNet.Core/BusNet.Core.csproj" />
+    <Project Path="src/BusNet.Infrastructure/BusNet.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BusNet.Tests/BusNet.Tests.csproj" />
+  </Folder>
+</Solution>

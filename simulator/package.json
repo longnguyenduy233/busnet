@@ -1,0 +1,21 @@
+{
+  "name": "busnet-simulator",
+  "version": "1.0.0",
+  "description": "GPS simulator for BusNet — sends bus location updates every 1 second",
+  "main": "simulator.js",
+  "scripts": {
+    "start": "npx ts-node simulator.ts",
+    "build": "npx tsc --outDir dist --rootDir . simulator.ts fetch-buses.ts fetch-routes-by-ids.ts auth-session.ts",
+    "start:js": "node dist/simulator.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0",
+    "vitest": "^4.0.8"
+  }
+}

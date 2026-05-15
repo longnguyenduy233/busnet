@@ -1,0 +1,23 @@
+<div class="shell-frame">
+  <mat-toolbar color="primary" class="top-nav">
+    <div class="nav-left">
+      <span class="logo">🚌 BusNet</span>
+    </div>
+    <div class="nav-center">
+      <button mat-button routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Home</button>
+      <button mat-button routerLink="/bus" routerLinkActive="active-link">Bus</button>
+      <button mat-button routerLink="/route" routerLinkActive="active-link">Route</button>
+      <button mat-button routerLink="/tracking" routerLinkActive="active-link">Tracking</button>
+    </div>
+    <div class="nav-right">
+      <span class="user-name">{{ displayName$ | async }}</span>
+      <button mat-icon-button (click)="logout()" matTooltip="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <main class="shell-main" [class.shell-main--tracking]="isTrackingRoute()">
+    <router-outlet />
+  </main>
+</div>

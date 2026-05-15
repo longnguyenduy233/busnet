@@ -1,0 +1,41 @@
+# E2E: Playwright + ng serve (see frontend/playwright.config.ts).
+# Browsers are not committed; install them in CI before running tests.
+name: Frontend E2E
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-e2e.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-e2e.yml'
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium (with OS deps on Linux)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npm run e2e
+        env:
+          CI: true

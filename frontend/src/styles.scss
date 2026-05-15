@@ -1,0 +1,41 @@
+@use '@angular/material' as mat;
+@import 'leaflet/dist/leaflet.css';
+
+@include mat.core();
+
+$primary: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$blue-palette
+  )
+));
+
+html {
+  @include mat.all-component-themes($primary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background-color: #fafafa;
+}
+
+// ── Shared error banner (used by Bus and Route pages) ─────────────────────────
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  font-size: 14px;
+
+  mat-icon { font-size: 18px; height: 18px; width: 18px; }
+}
