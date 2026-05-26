@@ -1,5 +1,7 @@
 using System.Text;
 using BusNet.Api.Hubs;
+using BusNet.Api.Infrastructure;
+using BusNet.Api.Middleware;
 using BusNet.Core.Entities;
 using BusNet.Core.Interfaces;
 using BusNet.Core.Security;
@@ -108,14 +110,51 @@ builder.Services.AddCors(options =>
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+app.UseMiddleware<DatabaseExceptionMiddleware>();
 
 app.UseCors("Angular");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.MapControllers();
 app.MapHub<TrackingHub>("/hubs/tracking");
+app.MapFallbackToController("Index", "Fallback");
 
-await SeedAsync(app);
+app.MapGet("/health/db", async (AppDbContext db, CancellationToken ct) =>
+{
+    try
+    {
+        var connected = await db.Database.CanConnectAsync(ct);
+        return connected
+            ? Results.Ok(new { status = "Healthy", database = "connected" })
+            : Results.Json(
+                new { status = "Unhealthy", error = "Cannot connect to the database." },
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+    catch (Exception ex) when (DatabaseErrors.IsUnavailable(ex))
+    {
+        return Results.Json(
+            new { status = "Unhealthy", error = DatabaseErrors.PublicMessage(app.Environment, ex) },
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+});
+
+try
+{
+    await SeedAsync(app);
+}
+catch (Exception ex) when (DatabaseErrors.IsUnavailable(ex))
+{
+    var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+    startupLogger.LogCritical(
+        ex,
+        "Cannot access the database. Verify ConnectionStrings:DefaultConnection and that SQL Server is running.");
+    Console.Error.WriteLine(
+        "BusNet API failed to start: database is unavailable. Check appsettings.json and SQL Server.");
+    Environment.Exit(1);
+}
 
 app.Run();
 

@@ -1,0 +1,1 @@
+import{E as t,F as r}from"./chunk-OYCIHWOU.js";var o=r("auth"),c=t(o,e=>e.token),n=t(o,e=>e.refreshToken),a=t(o,e=>e.userName),l=t(o,e=>e.displayName),p=t(o,e=>e.loading),h=t(o,e=>e.error),m=t(o,e=>!!e.token);export{c as a,n as b,l as c,p as d,h as e,m as f};
